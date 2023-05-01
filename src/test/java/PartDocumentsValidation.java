@@ -65,10 +65,6 @@ public class PartDocumentsValidation {
         driver.findElement(By.id("menuitem-1251-textEl")).click();
         driver.findElement(By.cssSelector(".x-tree-node-text:nth-child(4)")).click();
         //Element: [[ChromeDriver: chrome on WINDOWS (48c856e5532e7b2be3905704cfeb8b3f)] -> name: EAM_637fada2-ade6-4c51-ac37-5ef13b91bdb2]
-
-
-
-
         driver.close();
         driver.quit();
     }
