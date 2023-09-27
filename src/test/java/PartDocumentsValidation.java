@@ -1,3 +1,4 @@
+import io.qameta.allure.Step;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -23,7 +24,8 @@ public class PartDocumentsValidation {
     // Instantiate a IEDriver class.
     //WebDriver driver=new InternetExplorerDriver();
     //String partsURL = "https://mingle-portal.ca1.inforcloudsuite.com/TRANSLINK_DEV/637fada2-ade6-4c51-ac37-5ef13b91bdb2?favoriteContext=FROMEMAIL%3DSHAREPOINT%26USER_FUNCTION_NAME%3DSSPART%26SYSTEM_FUNCTION_NAME%3DSSPART&LogicalId=lid://infor.eam.eam";
-    String partsURL = "https://mingle-portal.ca1.inforcloudsuite.com/TRANSLINK_DEV/637fada2-ade6-4c51-ac37-5ef13b91bdb2?favoriteContext=FROMEMAIL%3DSHAREPOINT%26USER_FUNCTION_NAME%3DSSPART%26SYSTEM_FUNCTION_NAME%3DSSPART&LogicalId=lid://infor.eam.eam";
+   // String partsURL = "https://mingle-portal.ca1.inforcloudsuite.com/TRANSLINK_DEV/637fada2-ade6-4c51-ac37-5ef13b91bdb2?favoriteContext=FROMEMAIL%3DSHAREPOINT%26USER_FUNCTION_NAME%3DSSPART%26SYSTEM_FUNCTION_NAME%3DSSPART&LogicalId=lid://infor.eam.eam";
+    String partsURL = "https://mingle-portal.ca1.inforcloudsuite.com/TRANSLINK_AX2/4879940d-6e64-4140-977f-8a5e6c765b4b?favoriteContext=FROMEMAIL%3DSHAREPOINT%26USER_FUNCTION_NAME%3DSSPART%26SYSTEM_FUNCTION_NAME%3DSSPART&LogicalId=lid://infor.eam.eam";
     @BeforeAll
     public static void setProperty() {
         System.setProperty("webdriver.chrome.driver", "C:\\Users\\oluneva\\IdeaProjects\\DocsValidation\\src\\main\\resources\\chromedriver.exe");
@@ -34,26 +36,35 @@ public class PartDocumentsValidation {
 
     PartsPage partsPage = new PartsPage(driver);
     @Test
+    @Step
     public void test1() throws InterruptedException {
-
         driver.get(partsURL);
         WebDriverWait wait = new WebDriverWait(driver, ofSeconds(120));
         driver.manage().timeouts().implicitlyWait(120, TimeUnit.SECONDS);
         //login();
-        driver.findElement(By.linkText("TransLink Azure AD - Infor DEV")).click();
+        driver.findElement(By.linkText("TransLink Azure AD - Infor AX2")).click();
         driver.findElement(By.id("i0116")).sendKeys("olga.luneva@translink.ca");
         driver.findElement(By.id("idSIButton9")).click();
+        Thread.sleep(6000);
         wait.until(ExpectedConditions.visibilityOf(driver.findElement(By.xpath("//*[text()='Send Me a Push ']"))));
         driver.findElement(By.xpath("//*[text()='Send Me a Push ']")).click();
 
         Thread.sleep(20000);
-        wait.until(ExpectedConditions.visibilityOf(driver.findElement(By.name("EAM_637fada2-ade6-4c51-ac37-5ef13b91bdb2"))));
-        WebElement iframe =  driver.findElement(By.name("EAM_637fada2-ade6-4c51-ac37-5ef13b91bdb2"));
+        wait.until(ExpectedConditions.visibilityOf(driver.findElement(By.name("EAM_4879940d-6e64-4140-977f-8a5e6c765b4b"))));
+        //iFrame - EAM_4879940d-6e64-4140-977f-8a5e6c765b4b -- AX2
+        //iFrame - EAM_637fada2-ade6-4c51-ac37-5ef13b91bdb2 -- DEV
+        WebElement iframe =  driver.findElement(By.name("EAM_4879940d-6e64-4140-977f-8a5e6c765b4b"));
         driver.switchTo().frame(iframe);
         Thread.sleep(6000);
-        wait.until(ExpectedConditions.visibilityOf(driver.findElement(By.id("uxpicktriggerfield-1160-inputEl"))));
-        driver.findElement(By.id("uxpicktriggerfield-1160-inputEl")).sendKeys("A02-00-0102-393");
-        driver.findElement(By.id("uxpicktriggerfield-1160-trigger-trigger")).click();
+        //search field
+        String searchFieldID = "uxpicktriggerfield-1157-inputEl";
+        wait.until(ExpectedConditions.visibilityOf(driver.findElement(By.id(searchFieldID))));
+        //AX2 - uxpicktriggerfield-1157-inputEl
+        //DEV - uxpicktriggerfield-1160-inputEl
+        driver.findElement(By.id(searchFieldID)).sendKeys("A02-00-0102-393");
+        String searchButtonID = "uxpicktriggerfield-1157-trigger-trigger";
+        //Dev = uxpicktriggerfield-1160-trigger-trigger
+        driver.findElement(By.id(searchButtonID)).click();
         Thread.sleep(6000);
         System.out.println(driver.findElement(By.id("textfield-1348-inputEl")).getText());
         {
@@ -61,7 +72,9 @@ public class PartDocumentsValidation {
             Actions builder = new Actions(driver);
             builder.doubleClick(element).perform();
         }
+
         driver.findElement(By.cssSelector("#ext-element-13 > .x-tab-wrap")).click();
+        // DEV - driver.findElement(By.cssSelector("#ext-element-13 > .x-tab-wrap")).click();
         driver.findElement(By.id("menuitem-1251-textEl")).click();
         driver.findElement(By.cssSelector(".x-tree-node-text:nth-child(4)")).click();
         //Element: [[ChromeDriver: chrome on WINDOWS (48c856e5532e7b2be3905704cfeb8b3f)] -> name: EAM_637fada2-ade6-4c51-ac37-5ef13b91bdb2]

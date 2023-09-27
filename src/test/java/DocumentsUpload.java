@@ -1,3 +1,4 @@
+import org.apache.commons.csv.CSVRecord;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,8 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
 import static io.ous.jtoml.impl.Token.TokenType.Key;
@@ -34,8 +37,10 @@ public class DocumentsUpload {
         WebDriverWait wait = new WebDriverWait(driver, ofSeconds(20));
 
         PartsPage partsPage = new PartsPage(driver);
+
+
         @Test
-        public void test1() throws InterruptedException, AWTException {
+        public void test1() throws InterruptedException, AWTException, IOException {
 
             driver.get(documentUploadPage);
             WebDriverWait wait = new WebDriverWait(driver, ofSeconds(120));
@@ -56,14 +61,12 @@ public class DocumentsUpload {
             driver.findElement(By.id("tab-1132-btnInnerEl")).click();
 
             driver.findElement(By.id("lovfield-1287-inputEl")).sendKeys("BCRTC");
-//            driver.findElement(By.id("lovfield-1287-trigger-trigger")).click();//click search
-            Thread.sleep(1000);
-//            driver.findElement(By.xpath("//*[text()='British Columbia Rapid Transit Company ']")).click();//
 
-            //driver.findElement(By.id("uxselectfile-1268-button-fileInputEl")).click();//Add button
-            String uploadDocsPath = "C:\\Users\\oluneva\\TransLink\\Project-ERP TechEnablement - _D5 SIT\\EAM - Parts\\MSDS\\\"msds0007.PDF\" \"msds0008.PDF\"";
-            //String uploadDocsPath = "C:\\Users\\oluneva\\IdeaProjects\\DocsValidation\\src\\main\\resources\\chromedriver.exe";
-            //WebElement element = driver.findElement(By.id("uxselectfile-1268-button-btnWrap"));//Add button
+            Thread.sleep(1000);
+
+            String uploadDocsPath = "c:\\Users\\oluneva\\OneDrive - TransLink\\Vendor Documents\\21Tech\\Data-21Tech\\Inventory Management Data\\Data Modelling and Design\\D5 UAT\\Data Source\\MSDS\\\"msds0007.pdf\" \"msds0008.pdf";
+            //files to add "\"msds0007.PDF" "msds0008.PDF""
+
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
             StringSelection str = new StringSelection(uploadDocsPath);
             clipboard.setContents(str, null);
@@ -83,25 +86,8 @@ public class DocumentsUpload {
             robot.keyPress(KeyEvent.VK_ENTER);
             robot.keyRelease(KeyEvent.VK_ENTER);
 
-
-            //JavascriptExecutor jsx = (JavascriptExecutor) driver;
-
-          //jsx.executeScript("arguments[0].setAttribute('value', '" + uploadDocsPath +"')", element);
-//            //jsx.executeScript("document.getElementById('uxselectfile-1268-button-fileInputEl').('C:\\Users\\oluneva\\IdeaProjects\\DocsValidation\\src\\main\\resources\\chromedriver.exe');");
-//
-//            Thread.sleep(6000);
-//            driver.findElement(By.id("uxselectfile-1268-button-fileInputEl")).sendKeys(uploadDocsPath);//Add button
-
-            //driver.findElement(By.id("uxselectfile-1268-button-fileInputEl")).sendKeys(uploadDocsPath);//Add button
-
-
             Thread.sleep(6000);
-            //"msds0010" "msds0005" "msds0006" "msds0007" "msds0007B" "msds0008" "msds0008b" "msds0009"
-            //C:\Users\oluneva\TransLink\Project-ERP TechEnablement - _D5 SIT\EAM - Parts\MSDS\msds0007.pdf
-            //C:\Users\oluneva\TransLink\Project-ERP TechEnablement - _D5 SIT\EAM - Parts\MSDS\"msds0007.pdf" "msds0008.pdf"
-            //driver.findElement(By.id("button-1270-btnWrap")).click();//click Upload
             Thread.sleep(10000);
-
             driver.findElement(By.id("button-1270-btnInnerEl")).click();//click Upload
             //uxselectfile-1996-button
             Thread.sleep(10000);
@@ -128,6 +114,8 @@ public class DocumentsUpload {
             wait.until(ExpectedConditions.visibilityOf(driver.findElement(By.xpath("//*[text()='Send Me a Push ']"))));
             driver.findElement(By.xpath("//*[text()='Send Me a Push ']")).click();
         }
+        //imgs_to_load.csv
+        //msds_to_load.csv
 
     }
 
