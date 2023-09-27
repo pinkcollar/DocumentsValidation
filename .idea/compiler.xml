@@ -6,11 +6,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="DocsValidation" />
+        <module name="DocumentsUploadAndValidation" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="DocsValidation" target="19" />
+      <module name="DocumentsUploadAndValidation" target="19" />
     </bytecodeTargetLevel>
   </component>
 </project>

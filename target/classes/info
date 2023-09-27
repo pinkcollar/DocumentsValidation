@@ -1,0 +1,36 @@
+ Find element in window in Edge
+
+ Ctrl+Shift+C (Windows, Linux) or Command+Option+C (macOS)
+
+
+ Right click -> Inspect(in normal browser)
+
+
+Query for Automated validation: file name(msds_docs_legacyPartNumber)
+
+			  SELECT DISTINCT
+
+	m.msds as msds,
+	inv_id as partNumber,
+	[Original FileName],
+	m.[desc],
+		m.bcrtcnum as legacy_part_number,
+		ml.Document,
+	  'LDOC' AS tkd_trans,
+	  '' AS tkd_promptdata1,
+	  'PART' AS tkd_promptdata2,
+	  'PART' AS tkd_promptdata3,
+	  '*' AS tkd_promptdata4,
+	  '*' AS tkd_promptdata5,
+	  CONCAT(CAST(inv_id AS VARCHAR(20)), '#BCRTC') AS tkd_promptdata6,
+	  '+' AS tkd_promptdata7,
+	  '+' AS tkd_promptdata8
+
+	  FROM foxpro.ICMF_Data f
+		INNER JOIN foxpro.msds m
+			ON f.bcrtcnum = m.bcrtcnum
+			 join dbo.msds_loaded ml on
+			m.msds = SUBSTRING ([File Path],PATINDEX('%msds%',[File Path])+4,CHARINDEX('_',[File Path])-5);
+
+File titles:
+msds,partNumber,Original_FileName,desc,legacy_part_number,Document,,tkd_trans,tkd_promptdata1,tkd_promptdata2,tkd_promptdata3,tkd_promptdata4,tkd_promptdata5,tkd_promptdata6,tkd_promptdata7,tkd_promptdata8
