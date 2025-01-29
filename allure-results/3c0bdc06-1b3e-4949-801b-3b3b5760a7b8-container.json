@@ -1,0 +1,1 @@
+{"uuid":"3c0bdc06-1b3e-4949-801b-3b3b5760a7b8","name":"CMBC.BaseTest.setUp","children":["b4a74853-1c54-4cd4-b8b0-183d864314b5"],"description":"","befores":[{"name":"setUp","status":"passed","stage":"finished","description":"","steps":[],"attachments":[],"parameters":[],"start":1715967193229,"stop":1715967198172}],"afters":[],"start":1715967193228,"stop":1715967198173}
