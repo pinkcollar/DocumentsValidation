@@ -1,6 +1,7 @@
 package PerformaceTest;
 
 import CMBC_code.CsvParcer;
+import PerofrmanceTest.ConfigReader;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.*;
@@ -30,9 +31,11 @@ public class R5MetersReadingUpdate {
 
     //String tablesFilePAth = "src\\main\\resources\\CMBC\\CMBC_PRDEAM_Reports_Tables_Analysis.csv";
     //String primaryKeys = "src\\main\\resources\\CMBC\\EAM_12.1_PrimaryKeys_revised.csv";
+    private static String environment = ConfigReader.get("environment");
+    private static String loginPage = ConfigReader.get("loginPage_" + environment);
+    private static String startMenuId = ConfigReader.get("startMenuId_" + environment);
+    private static String azureTable = ConfigReader.get("azureTable_" + environment);
 
-    //String loginPage = "https://ca1.eam.hxgnsmartcloud.com/web/base/logindisp?tenant=BVBWV1707339191_DEV";
-    String loginPage = "https://ca1.eam.hxgnsmartcloud.com/web/base/logindisp?tenant=BVBWV1707339191_TRN";
 
     public R5MetersReadingUpdate() throws IOException {
     }
@@ -61,30 +64,26 @@ public class R5MetersReadingUpdate {
             Thread.sleep(10000);
 
             // Locate and click the start menu
-        //TRN
-            WebElement startMenu = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//span[@id='appheadericon-1039-btnEl']")));
-            //DEV
-         //WebElement startMenu = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//span[@id='appheadericon-1043-btnEl']")));
-            startMenu.click();
+
+        WebElement startMenu = wait.until(ExpectedConditions.presenceOfElementLocated(
+                By.xpath("//span[@id='" + startMenuId + "']")));
+        startMenu.click();
 
             // Wait and locate the Work menu
             Thread.sleep(2000);
             wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//span[text()='Work']")));
             WebElement WorkMenu = driver.findElement(By.xpath("//span[text()='Work']"));
             WorkMenu.click();
-            //DEV
-            //wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//table[36]/tbody/tr/td/div/span[text()='Azure']")));
-           //TRN
-            wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//table[35]/tbody/tr/td/div/span[text()='Azure']")));
-            // Locate and click the Azure folder
-        //DEV
-            //WebElement AzureFolder = driver.findElement(By.xpath("//table[36]/tbody/tr/td/div/span[text()='Azure']"));
-            //TRN
-        WebElement AzureFolder = driver.findElement(By.xpath("//table[35]/tbody/tr/td/div/span[text()='Azure']"));
-            AzureFolder.click();            // Sleep to ensure actions are completed
-            Thread.sleep(2000);
+            wait.until(ExpectedConditions.presenceOfElementLocated(
+                By.xpath("//table[" + azureTable + "]/tbody/tr/td/div/span[text()='Azure']")));
 
+            WebElement azureFolder = driver.findElement(
+                By.xpath("//table[" + azureTable + "]/tbody/tr/td/div/span[text()='Azure']"));
+            azureFolder.click();           // Sleep to ensure actions are completed
+            Thread.sleep(2000);
     }
+    //#treeview-1057-record-49 > tbody > tr > td > div
+    //html/body/div[1]/div/div[1]/div/div/div[2]/div[1]/div[2]/table[41]/tbody/tr/td/div/span
     @Test
     public void metersReadingUpdate() throws InterruptedException {
         GoThroughMenu(driver, loginPage);
@@ -156,7 +155,7 @@ public class R5MetersReadingUpdate {
         // Initial check for 'pmWorkOrdersButton'
 
         // Path to the CSV file
-        String filename = "c:\\Users\\oluneva\\Desktop\\CMBC\\Performance Test\\Minor_PPM_Objects_Meter_Due.csv";
+        String filename = "C:\\Users\\oluneva1\\IdeaProjects\\DocumentsValidation\\src\\main\\resources\\Minor_PPM_Objects_Meter_Due.csv";
         String columnName = "ppo_object";
         HashSet<String> equipmentsSet = (HashSet) readColumnFromCsv(filename, columnName);
 
@@ -173,13 +172,25 @@ public class R5MetersReadingUpdate {
             checkAndClickButton(driver, By.xpath("//*[@id='button-1013-btnWrap']"));
             checkAndClickButton(driver, By.id("button-1013-btnInnerEl"));
 
-            WebElement equipmentField = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                    By.cssSelector("html > body > div:nth-of-type(1) > div > div:nth-of-type(2) > div > div > div:nth-of-type(2) > div > div:nth-of-type(1) > div > div > div > div > div:nth-of-type(3) > div > div > div > div > div > div > div > div > div:nth-of-type(2) > div > div:nth-of-type(2) > div > div:nth-of-type(2) > table:nth-of-type(" + batch + ") > tbody > tr > td:nth-of-type(2)")));
+            String equipmentSelector = ConfigReader.get("equipmentSelector_" + environment);
+
+            // Replace the placeholder with the actual batch value
+            equipmentSelector = equipmentSelector.replace("{batch}", String.valueOf(batch));
+
+            WebElement equipmentField;
+
+            if (equipmentSelector.startsWith("/")) {  // XPath
+                equipmentField = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(equipmentSelector)));
+            } else {  // CSS Selector
+                equipmentField = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(equipmentSelector)));
+            }
             doubleClickAndInsertValue(driver, equipmentField, equipment);
 
-            WebElement differenceCheckbox = wait.until(ExpectedConditions.elementToBeClickable(
-                    By.cssSelector("html > body > div:nth-of-type(1) > div > div:nth-of-type(2) > div > div > div:nth-of-type(2) > div > div:nth-of-type(1) > div > div > div > div > div:nth-of-type(3) > div > div > div > div > div > div > div > div > div:nth-of-type(2) > div > div:nth-of-type(2) > div > div:nth-of-type(2) > table:nth-of-type(" + batch + ") > tbody > tr > td:nth-of-type(6) > div > div")));
-            ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", differenceCheckbox);
+            // XPath for the difference checkbox
+            String checkboxXPath = "/html/body/div[1]/div/div[2]/div/div/div/div/div[1]/div/div/div/div/div[3]/div/div/div/div/div/div/div/div/div[2]/div/div[2]/div/div[2]/table[" + batch + "]/tbody/tr/td[6]/div/div";
+
+// Wait until the checkbox is clickable
+            WebElement differenceCheckbox = wait.until(ExpectedConditions.elementToBeClickable(By.xpath(checkboxXPath)));
 
             try {
                 // Check if the checkbox is already selected
@@ -193,13 +204,21 @@ public class R5MetersReadingUpdate {
                 }
             }
 
-            WebElement newValueField = driver.findElement(
-                    By.cssSelector("html > body > div:nth-of-type(1) > div > div:nth-of-type(2) > div > div > div:nth-of-type(2) > div > div:nth-of-type(1) > div > div > div > div > div:nth-of-type(3) > div > div > div > div > div > div > div > div > div:nth-of-type(2) > div > div:nth-of-type(2) > div > div:nth-of-type(2) > table:nth-of-type(" + batch + ") > tbody > tr > td:nth-of-type(8) > div"));
+            // XPath for the new value field
+            String newValueXPath = "/html/body/div[1]/div/div[2]/div/div/div/div/div[1]/div/div/div/div/div[3]/div/div/div/div/div/div/div/div/div[2]/div/div[2]/div/div[2]/table[" + batch + "]/tbody/tr/td[8]/div";
+
+// Locate the new value field
+            WebElement newValueField = driver.findElement(By.xpath(newValueXPath));
+
+// Double-click and insert the value "8000"
             doubleClickAndInsertValue(driver, newValueField, "8000");
 
-            WebElement updateMetersButton = wait.until(ExpectedConditions.elementToBeClickable(
-                    By.cssSelector("html > body > div:nth-of-type(1) > div > div:nth-of-type(2) > div > div > div:nth-of-type(2) > div > div:nth-of-type(1) > div > div > div > div > div:nth-of-type(3) > div > div > div > div > div > div > div > div > div:nth-of-type(1) > div > div > div > div > div > div > div > div > div > div > div > div > div > div:nth-of-type(1) > div > div > a > span > span > span:nth-of-type(2)")));
+            String updateMetersButtonXPath = "/html/body/div[1]/div/div[2]/div/div/div/div/div[1]/div/div/div/div/div[3]/div/div/div/div/div/div/div/div/div[1]/div/div/div/div/div/div/div/div/div/div/div/div/div/div[1]/div/div/a/span/span/span[2]";
 
+// Wait until the button is clickable
+            WebElement updateMetersButton = wait.until(ExpectedConditions.elementToBeClickable(
+                    By.xpath(updateMetersButtonXPath)
+            ));
             System.out.println(updateMetersButton + ": " + updateMetersButton.getText());
             if (batch == 15) {
                 try {

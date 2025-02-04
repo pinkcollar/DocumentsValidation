@@ -32,7 +32,7 @@ public class CMBCLogin extends AbstractBasePage<CMBCLogin> {
 
     public void login(String env) {
         WebDriverWait wait = new WebDriverWait(driver, ofSeconds(120));
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("div[data-test-id='olga.luneva@translink.ca']")));
-        driver.findElement(By.cssSelector("div[data-test-id='olga.luneva@translink.ca']")).click();
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("div[data-test-id='olga.luneva.contractor@translink.ca']")));
+        driver.findElement(By.cssSelector("div[data-test-id='olga.luneva.contractor@translink.ca']")).click();
     }
 }

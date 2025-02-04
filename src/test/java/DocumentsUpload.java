@@ -1,4 +1,4 @@
-import org.apache.commons.csv.CSVRecord;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -9,16 +9,12 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.JavascriptExecutor;
-
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
-
-import static io.ous.jtoml.impl.Token.TokenType.Key;
 import static java.time.Duration.ofSeconds;
 
 public class DocumentsUpload {
@@ -47,7 +43,7 @@ public class DocumentsUpload {
             driver.manage().timeouts().implicitlyWait(120, TimeUnit.SECONDS);
             //login();
             driver.findElement(By.linkText("TransLink Azure AD - Infor DEV")).click();
-            driver.findElement(By.id("i0116")).sendKeys("olga.luneva@translink.ca");
+            driver.findElement(By.id("i0116")).sendKeys("olga.luneva.contractor@translink.ca");
             driver.findElement(By.id("idSIButton9")).click();
             Thread.sleep(13000);
             wait.until(ExpectedConditions.visibilityOf(driver.findElement(By.xpath("//*[text()='Send Me a Push ']"))));
@@ -114,8 +110,7 @@ public class DocumentsUpload {
             wait.until(ExpectedConditions.visibilityOf(driver.findElement(By.xpath("//*[text()='Send Me a Push ']"))));
             driver.findElement(By.xpath("//*[text()='Send Me a Push ']")).click();
         }
-        //imgs_to_load.csv
-        //msds_to_load.csv
+
 
     }
 
