@@ -162,7 +162,7 @@ public class R5MetersReadingUpdate {
         // Navigate to 'Batch Meter Readings'
         WebElement metersScreen = driver.findElement(By.xpath("//span[@class='x-tree-node-text ' and text()='Batch Meter Readings']"));
         metersScreen.click();
-        while (true) {
+        //while (true) {
         int batch = 0;
 
         for (String equipment : equipmentsSet) {
@@ -235,7 +235,7 @@ public class R5MetersReadingUpdate {
                 wait.until(ExpectedConditions.textToBePresentInElementLocated(By.xpath("/html/body/div[3]/div/div/div/div/div/div[1]/div/span[2]"), expectedText));
             }
         }
-        }
+       // }
     }
 
     @Test
