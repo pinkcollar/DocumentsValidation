@@ -65,6 +65,12 @@
             <artifactId>mssql-jdbc</artifactId>
             <version>11.2.3.jre8</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.json/json -->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20250107</version>
+        </dependency>
 
         <dependency>
             <groupId>com.microsoft.azure</groupId>
