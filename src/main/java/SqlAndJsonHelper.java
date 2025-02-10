@@ -121,6 +121,7 @@ public class SqlAndJsonHelper {
         int batchNumber = 1;
 
         while (true) {
+            // Construct the JSON body with the current cursor position
             String jsonBody = "{"
                     + "\"GRID_TYPE\": {\"TYPE\": \"LIST\"},"
                     + "\"GRID\": {"
@@ -141,18 +142,20 @@ public class SqlAndJsonHelper {
 
             System.out.println("Retrieving JSON data for batch #" + batchNumber + " with cursor position: " + cursorPosition);
 
+            // Send the POST request and parse the JSON response
             String jsonResponse = sendPostRequest(jsonBody);
             if (jsonResponse == null) {
                 System.out.println("Failed to retrieve JSON data for batch #" + batchNumber);
-                break;
+                break; // Stop if there's an error in the request
             }
 
             JSONObject jsonObject = new JSONObject(jsonResponse);
             JSONObject resultData = jsonObject.getJSONObject("Result").getJSONObject("ResultData");
 
+            // Check if DATARECORD is null (no records)
             if (resultData.isNull("DATARECORD")) {
                 System.out.println("No more records to fetch. Pagination complete.");
-                break;
+                break; // No more records to fetch
             }
 
             JSONArray dataRecords = resultData.getJSONArray("DATARECORD");
@@ -173,17 +176,19 @@ public class SqlAndJsonHelper {
             System.out.println("Retrieved " + dataRecords.length() + " records in batch #" + batchNumber);
             System.out.println("Cumulative total records: " + records.size());
 
+            // Check if there are more records to fetch
             if (resultData.isNull("NEXTCURSORPOSITION")) {
                 System.out.println("No more records to fetch. Pagination complete.");
-                break;
+                break; // No more records to fetch
             }
 
             int nextCursorPosition = resultData.getInt("NEXTCURSORPOSITION");
             if (nextCursorPosition <= 0) {
                 System.out.println("No more records to fetch. Pagination complete.");
-                break;
+                break; // No more records to fetch
             }
 
+            // Update the cursor position for the next request
             cursorPosition = nextCursorPosition;
             batchNumber++;
         }
