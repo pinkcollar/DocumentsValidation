@@ -6,6 +6,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import java.sql.DriverManager;
 
@@ -31,22 +32,19 @@ public class SqlAndJsonHelper {
 
         String gridName = "1UTREA"; // Example grid
         String aliasName = "rea_lastsaved";
-        String filterValue = "2025-02-06 15:50"; // Example filter value
+        String filterValueStart = "02/06/2025 15:50"; // Example filter value start
+        String filterValueEnd = "02/07/2025 15:50"; // Example filter value end
 
         // Fetch JSON records
-        List<Map<String, String>> jsonRecords = helper.getJSONRecords(gridName, aliasName, filterValue);
+        List<Map<String, String>> jsonRecords = helper.getJSONRecords(gridName, aliasName, filterValueStart, filterValueEnd);
         System.out.println("Retrieved JSON Records: " + jsonRecords.size());
 
-        // Fetch SQL record count
-        int sqlRecordCount = helper.countSQLRecords(filterValue);
-        System.out.println("Total records in SQL: " + sqlRecordCount);
+        // Fetch SQL records
+        List<Map<String, String>> sqlRecords = helper.getSQLRecords(filterValueStart, filterValueEnd);
+        System.out.println("Retrieved SQL Records: " + sqlRecords.size());
 
-        // Compare counts
-        if (jsonRecords.size() == sqlRecordCount) {
-            System.out.println("✅ The SQL and JSON record counts match!");
-        } else {
-            System.out.println("❌ Mismatch! JSON count: " + jsonRecords.size() + ", SQL count: " + sqlRecordCount);
-        }
+        // Compare records
+        JSONSQLComparator.compareRecords(jsonRecords, sqlRecords);
     }
 
     /**
@@ -62,38 +60,17 @@ public class SqlAndJsonHelper {
     }
 
     /**
-     * Retrieves the count of SQL records that match the filter criteria.
-     */
-    public int countSQLRecords(String filterValue) {
-        int recordCount = 0;
-        String sqlQuery = "SELECT COUNT(*) FROM [DS7USER].[R5READINGS] WHERE REA_LASTSAVED >= ?";
-
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sqlQuery)) {
-
-            stmt.setString(1, filterValue);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                recordCount = rs.getInt(1);
-            }
-        } catch (SQLException e) {
-            System.err.println("SQL Query Failed: " + e.getMessage());
-        }
-        return recordCount;
-    }
-
-    /**
      * Retrieves SQL records that match the filter criteria.
      */
-    public List<Map<String, String>> getSQLRecords(String filterValue) {
+    public List<Map<String, String>> getSQLRecords(String filterValueStart, String filterValueEnd) {
         List<Map<String, String>> records = new ArrayList<>();
-        String sqlQuery = "SELECT rea_code, rea_diff, rea_meter, rea_object, rea_reading FROM [DS7USER].[R5READINGS] WHERE REA_LASTSAVED >= ?";
+        String sqlQuery = "SELECT rea_code, rea_diff, rea_meter, rea_object, rea_reading FROM [DS7USER].[R5READINGS] WHERE REA_LASTSAVED >= ? AND REA_LASTSAVED < ?";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sqlQuery)) {
 
-            stmt.setString(1, filterValue);
+            stmt.setString(1, filterValueStart);
+            stmt.setString(2, filterValueEnd);
             ResultSet rs = stmt.executeQuery();
 
             ResultSetMetaData metaData = rs.getMetaData();
@@ -102,7 +79,20 @@ public class SqlAndJsonHelper {
             while (rs.next()) {
                 Map<String, String> row = new HashMap<>();
                 for (int i = 1; i <= columnCount; i++) {
-                    row.put(metaData.getColumnName(i), rs.getString(i));
+                    String columnName = metaData.getColumnName(i);
+                    String value = rs.getString(i);
+
+                    // Convert nulls to empty strings for comparison
+                    if (value == null) {
+                        value = "";
+                    }
+
+                    // Remove trailing zeros from floating-point numbers
+                    if (columnName.equals("rea_diff") || columnName.equals("rea_reading")) {
+                        value = value.replaceAll("\\.0+$", "").replaceAll("(\\.[0-9]*[1-9])0+$", "$1");
+                    }
+
+                    row.put(columnName, value);
                 }
                 records.add(row);
             }
@@ -115,7 +105,7 @@ public class SqlAndJsonHelper {
     /**
      * Retrieves JSON records from the API that match the filter criteria.
      */
-    public List<Map<String, String>> getJSONRecords(String gridName, String aliasName, String filterValue) {
+    public List<Map<String, String>> getJSONRecords(String gridName, String aliasName, String filterValueStart, String filterValueEnd) {
         List<Map<String, String>> records = new ArrayList<>();
         int cursorPosition = 0;
         int batchNumber = 1;
@@ -134,7 +124,15 @@ public class SqlAndJsonHelper {
                     + "\"MADDON_FILTER\": [{"
                     + "\"ALIAS_NAME\": \"" + aliasName + "\","
                     + "\"OPERATOR\": \">=\","
-                    + "\"VALUE\": \"" + filterValue + "\""
+                    + "\"VALUE\": \"" + filterValueStart + "\","
+                    + "\"JOINER\": \"AND\","
+                    + "\"SEQNUM\": 1"
+                    + "}, {"
+                    + "\"ALIAS_NAME\": \"" + aliasName + "\","
+                    + "\"OPERATOR\": \"<\","
+                    + "\"VALUE\": \"" + filterValueEnd + "\","
+                    + "\"JOINER\": \"AND\","
+                    + "\"SEQNUM\": 2"
                     + "}]"
                     + "},"
                     + "\"REQUEST_TYPE\": \"LIST.HEAD_DATA.STORED\""
@@ -166,9 +164,24 @@ public class SqlAndJsonHelper {
                 for (int j = 0; j < dataFields.length(); j++) {
                     JSONObject dataField = dataFields.getJSONObject(j);
                     String fieldName = dataField.getString("FIELDNAME");
-                    if (fieldName.equals("rea_code") || fieldName.equals("rea_diff") || fieldName.equals("rea_meter") || fieldName.equals("rea_object") || fieldName.equals("rea_reading")) {
-                        record.put(fieldName, dataField.getString("FIELDVALUE"));
+                    String fieldValue = dataField.getString("FIELDVALUE");
+
+                    // Convert empty strings to nulls for comparison
+                    if (fieldValue.isEmpty()) {
+                        fieldValue = "";
                     }
+
+                    // Remove commas from numeric values
+                    if (fieldName.equals("rea_diff") || fieldName.equals("rea_reading")) {
+                        fieldValue = fieldValue.replace(",", "");
+                    }
+
+                    // Remove trailing zeros from floating-point numbers
+                    if (fieldName.equals("rea_diff") || fieldName.equals("rea_reading")) {
+                        fieldValue = fieldValue.replaceAll("\\.0+$", "").replaceAll("(\\.[0-9]*[1-9])0+$", "$1");
+                    }
+
+                    record.put(fieldName, fieldValue);
                 }
                 records.add(record);
             }
